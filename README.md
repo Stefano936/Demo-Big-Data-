@@ -2,11 +2,6 @@
 
 Pipeline ETL para procesar datos de películas de IMDb en un Data Lake con arquitectura de capas (Landing → Raw → Curated).
 
-## 📋 Requisitos
-
-- Python 3.8 o superior
-- pandas
-- pathlib (incluido en Python)
 
 ## 🚀 Instalación
 
@@ -15,12 +10,6 @@ Pipeline ETL para procesar datos de películas de IMDb en un Data Lake con arqui
 ```bash
 git clone https://github.com/Stefano936/Demo-Big-Data-.git
 cd Demo-Big-Data-/proyecto_cadena_cines
-```
-
-### 2. Instalar dependencias
-
-```bash
-pip install pandas
 ```
 
 ## 📁 Estructura de directorios
@@ -33,11 +22,7 @@ proyecto_cadena_cines/
 ├── data_original/              # 📥 Archivos fuente (REQUIERE AGREGAR)
 │   ├── title.basics.tsv       # Datos básicos de títulos IMDb
 │   └── title.ratings.tsv      # Ratings e información de votos
-├── datalake/
-│   ├── landing/               # ⚠️ Capa de ingesta (se genera automáticamente)
-│   ├── raw/                   # ⚠️ Capa de procesamiento (se genera automáticamente)
-│   └── curated/               # ⚠️ Capa de datos finales (se genera automáticamente)
-└── analytics/                 # ⚠️ KPIs y reportes (se genera automáticamente)
+└── analytics/                 # ⚠️ KPIs y gráficas (se genera automáticamente)
 ```
 
 **NOTA:** Las carpetas marcadas con ⚠️ se crean automáticamente al ejecutar el pipeline.
@@ -72,13 +57,19 @@ Invoke-WebRequest -Uri $url_ratings -OutFile "data_original/title.ratings.tsv.gz
 # Descomprimir (necesita 7-Zip o similar instalado)
 ```
 
+## 🐋 Levantar el docker
+
+```bash
+cd proyecto_cadena_cines
+docker compose up --build
+```
+
 ## ▶️ Ejecutar el pipeline
 
 Una vez que hayas agregado los archivos TSV en `data_original/`:
 
 ```bash
-cd proyecto_cadena_cines
-python pipeline.py
+bash pipeline_spark.sh
 ```
 
 ## 📊 ¿Qué hace el pipeline?
@@ -108,23 +99,11 @@ Genera 3 reportes en `analytics/`:
 - `popularidad_por_anio.csv` → Votos promedio por año de estreno
 - `distribucion_duracion.csv` → Estadísticas de duración de películas
 
-## 📤 Salida esperada
+## 🐝 Publicar curated a HIVE
 
-Después de ejecutar el pipeline, verás algo como:
-
-```
-[OK] Estructura de carpetas creada/verificada.
-[OK] Copiado a landing: title.basics.tsv
-[OK] Copiado a landing: title.ratings.tsv
-[INFO] Cargando title.basics.tsv...
-[INFO] Cargando title.ratings.tsv...
-[OK] Archivos procesados a RAW.
-[OK] Dataset curated generado: datalake/curated/movies_curated.csv
-[INFO] Filas en curated: 500000 (aproximadamente)
-[OK] KPI rating promedio por género generado.
-[OK] KPI popularidad por año generado.
-[OK] Métricas de distribución de duración generadas.
-[DONE] Pipeline completo ejecutado.
+Una vez terminado el pipeline, se toman los datos de curated y se pasan a HIVE con:
+```bash
+bash load_curated_to_hive.sh
 ```
 
 ## 🔍 Solución de problemas
@@ -142,7 +121,14 @@ Después de ejecutar el pipeline, verás algo como:
 
 | Archivo | Descripción |
 |---------|-------------|
-| `pipeline.py` | Script principal del ETL |
+| `analytics/Gráficas.pbix` | Gráficas y resultados |
+| `load_curated_to_hive.sh` | Cargado de datos a servidor de HIVE |
+| `pipeline_spark.py` | Ingestión de datos y pipeline |
+| `pipeline_spark.py` | Script principal del ETL ejecutado en el medio del .sh |
+| `pipeline.py` | Script viejo principal del ETL |
+| `docker-compose.yml` | Imágen usada por el repositorio |
+| `hadoop-hive.env` | Configuración de HIVE |
+| `hadoop.env` | Configuración de hadoop |
 | `README.md` | Este archivo |
 | `.gitignore` | Configuración para excluir archivos grandes |
 
